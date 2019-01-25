@@ -108,6 +108,12 @@ endif()
 get_filename_component(SOS_APP_NAME ${CMAKE_SOURCE_DIR} NAME)
 project(${SOS_APP_NAME} CXX C)
 
+# override "-isystem" because Boost build will produce "error: template with C linkage" with it
+set(CMAKE_INCLUDE_SYSTEM_FLAG_C -I)
+set(CMAKE_INCLUDE_SYSTEM_FLAG_CXX -I)
+message(STATUS "CMAKE_INCLUDE_SYSTEM_FLAG_C: " ${CMAKE_INCLUDE_SYSTEM_FLAG_C})
+message(STATUS "CMAKE_INCLUDE_SYSTEM_FLAG_CXX: " ${CMAKE_INCLUDE_SYSTEM_FLAG_CXX})
+
 message(STATUS "Building App sources: " ${SOS_APP_SOURCELIST})
 message(STATUS "Using App include directories: " ${SOS_APP_INCLUDE_DIRECTORIES})
 message(STATUS "Using App defines: " ${SOS_APP_DEFINITIONS})
@@ -143,3 +149,35 @@ message(STATUS "Build target: " ${BUILD_TARGET})
 foreach(l ${EXTERNAL_APP_LIBRARIES})
 	target_link_libraries(${BUILD_TARGET} -l${l})
 endforeach()
+
+# global dependencies
+# call cmake with (or edit CMakeCache.txt): -DICU_CROSS_ARCH=arm-none-eabi -DBUILD_ICU=ON -DICU_BUILD_VERSION=63.1
+# NOTE: Requires patch and other utilities to be installed, see mingw-get below
+# NOTE: Requires host gcc/g++ in '$env:PATH': mingw-get.exe install gcc-core gcc-c++ msys-patch sh
+#set(HOST_CC "/c/src/mingw-get-0.6.3-mingw32-pre-20170905-1-bin/bin/gcc.exe" CACHE FILEPATH "C Compiler for host target")
+#set(HOST_CXX "/c/src/mingw-get-0.6.3-mingw32-pre-20170905-1-bin/bin/g++.exe" CACHE FILEPATH "C++ Compiler for host target")
+#add_subdirectory(icu-cmake)
+#add_subdirectory(unistringxx)
+#add_subdirectory(libiconv) # provides iconv target
+#target_link_libraries(iconv unistringxx)
+
+# libc++ (replaces libstdc++)
+#if (NOT LLVM_PATH)
+#	set(LLVM_PATH ${CMAKE_CURRENT_SOURCE_DIR}/llvm CACHE STRING "llvm path for libcxx")
+#endif()
+#if (NOT LIBCXX_CXX_ABI)
+#	set(LIBCXX_CXX_ABI "none" CACHE STRING "ABI for libcxx")
+#endif()
+#set(LIBCXX_INCLUDE_BENCHMARKS OFF CACHE BOOL "Build tests and tools to run them")
+#set(LIBCXX_ENABLE_SHARED ON CACHE BOOL "Generate shared libcxx")
+#set(LIBCXX_ENABLE_STATIC OFF CACHE BOOL "Generate static libcxx")
+#add_subdirectory(libcxx)
+
+# NOTE: Boost needs exceptions and rtti
+#add_compile_definitions(_POSIX_SOURCE _POSIX_THREADS=1 _POSIX_TIMERS=1)
+#add_subdirectory(boost-cmake)
+#target_link_libraries(${BUILD_TARGET}
+#		Boost::filesystem
+#		Boost::serialization
+#		Boost::thread
+#	)
